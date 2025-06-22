@@ -71,11 +71,12 @@ public class CommitInfoAnalyzer {
      * Analyzes each {@link CommitInfo} in {@code commitInfos} and returns a list of {@link CommitResult} that is not
      * specified to be ignored or the author is inside {@code config}.
      */
-    public List<CommitResult> analyzeCommits(List<CommitInfo> commitInfos, RepoConfiguration config) {
+    public List<CommitResult> analyzeCommits(List<CommitInfo> commitInfos, RepoConfiguration config,
+            boolean shouldIncludeCommitFileStats) {
         logger.info(String.format(MESSAGE_START_ANALYZING_COMMIT_INFO, config.getLocation(), config.getBranch()));
 
         return commitInfos.stream()
-                .map(commitInfo -> analyzeCommit(commitInfo, config))
+                .map(commitInfo -> analyzeCommit(commitInfo, config, shouldIncludeCommitFileStats))
                 .filter(commitResult -> !commitResult.getAuthor().equals(Author.UNKNOWN_AUTHOR)
                         && !CommitHash.isInsideCommitList(commitResult.getHash(), config.getIgnoreCommitList()))
                 .distinct()
@@ -87,7 +88,8 @@ public class CommitInfoAnalyzer {
      * Extracts the relevant data from {@code commitInfo} into a {@link CommitResult}. Retrieves the author of the
      * commit from {@code config}.
      */
-    public CommitResult analyzeCommit(CommitInfo commitInfo, RepoConfiguration config) {
+    public CommitResult analyzeCommit(CommitInfo commitInfo, RepoConfiguration config,
+            boolean shouldIncludeCommitFileStats) {
         String infoLine = commitInfo.getInfoLine();
         String statLine = commitInfo.getStatLine();
 
@@ -120,7 +122,8 @@ public class CommitInfoAnalyzer {
             extractTagNames(tags);
         }
 
-        if (statLine.isEmpty()) { // empty commit, no files changed
+        // empty commit, no files changed || no need to include file stats
+        if (statLine.isEmpty() || !shouldIncludeCommitFileStats) {
             return new CommitResult(author, hash, isMergeCommit, adjustedDate, messageTitle, messageBody, tags);
         }
 

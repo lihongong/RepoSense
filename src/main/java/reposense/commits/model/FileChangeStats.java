@@ -24,8 +24,8 @@ public class FileChangeStats {
         }
 
         FileChangeStats otherFileChangeStats = (FileChangeStats) other;
-        return numFilesChanged == otherFileChangeStats.numFilesChanged &&
-                totalInsertions == otherFileChangeStats.totalInsertions &&
-                totalDeletions == otherFileChangeStats.totalDeletions;
+        return numFilesChanged == otherFileChangeStats.numFilesChanged
+                && totalInsertions == otherFileChangeStats.totalInsertions
+                && totalDeletions == otherFileChangeStats.totalDeletions;
     }
 }

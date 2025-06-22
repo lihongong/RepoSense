@@ -18,10 +18,12 @@ public class CommitsReporter {
     /**
      * Generates and returns the commit contribution summary for each repo in {@code config}.
      */
-    public CommitContributionSummary generateCommitSummary(RepoConfiguration config) {
+    public CommitContributionSummary generateCommitSummary(RepoConfiguration config,
+            boolean shouldIncludeCommitFileStats) {
         List<CommitInfo> commitInfos = commitInfoExtractor.extractCommitInfos(config);
 
-        List<CommitResult> commitResults = commitInfoAnalyzer.analyzeCommits(commitInfos, config);
+        List<CommitResult> commitResults = commitInfoAnalyzer.analyzeCommits(commitInfos, config,
+                shouldIncludeCommitFileStats);
 
         return commitResultAggregator.aggregateCommitResults(config, commitResults);
     }

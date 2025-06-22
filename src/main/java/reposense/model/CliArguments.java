@@ -41,6 +41,8 @@ public class CliArguments {
     private boolean isPortfolio;
     private boolean isFreshClonePerformed = ArgsParser.DEFAULT_SHOULD_FRESH_CLONE;
     private boolean isOnlyTextRefreshed;
+    private boolean isPrettyPrintingUsed; // Json pretty printing
+    private boolean shouldIncludeCommitFileStats;
 
     private List<String> locations;
     private boolean isViewModeOnly;
@@ -56,14 +58,6 @@ public class CliArguments {
     private RepoBlurbMap repoBlurbMap;
     private AuthorBlurbMap authorBlurbMap;
     private ChartBlurbMap chartBlurbMap;
-
-    // basics learning
-    private boolean isPrettyPrintingUsed;
-
-    // basics learning
-    public boolean isPrettyPrintingUsed() {
-        return isPrettyPrintingUsed;
-    }
 
     /**
      * Constructs a {@code CliArguments} object without any parameters.
@@ -132,6 +126,12 @@ public class CliArguments {
 
     public boolean isFreshClonePerformed() {
         return isFreshClonePerformed;
+    }
+    public boolean isPrettyPrintingUsed() {
+        return isPrettyPrintingUsed;
+    }
+    public boolean shouldIncludeCommitFileStats() {
+        return shouldIncludeCommitFileStats;
     }
 
     public List<String> getLocations() {
@@ -261,7 +261,9 @@ public class CliArguments {
                 && this.isAuthorshipAnalyzed == otherCliArguments.isAuthorshipAnalyzed
                 && Objects.equals(this.originalityThreshold, otherCliArguments.originalityThreshold)
                 && this.isPortfolio == otherCliArguments.isPortfolio
-                && this.isOnlyTextRefreshed == otherCliArguments.isOnlyTextRefreshed;
+                && this.isOnlyTextRefreshed == otherCliArguments.isOnlyTextRefreshed
+                && this.isPrettyPrintingUsed == otherCliArguments.isPrettyPrintingUsed
+                && this.shouldIncludeCommitFileStats == otherCliArguments.shouldIncludeCommitFileStats;
     }
 
     /**
@@ -278,6 +280,11 @@ public class CliArguments {
 
         public Builder isPrettyPrintingUsed(boolean isPrettyPrintingUsed) {
             this.cliArguments.isPrettyPrintingUsed = isPrettyPrintingUsed;
+            return this;
+        }
+
+        public Builder shouldIncludeCommitFileStats(boolean shouldIncludeCommitFileStats) {
+            this.cliArguments.shouldIncludeCommitFileStats = shouldIncludeCommitFileStats;
             return this;
         }
 

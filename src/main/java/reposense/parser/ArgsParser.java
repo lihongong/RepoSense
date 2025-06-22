@@ -105,7 +105,8 @@ public class ArgsParser {
     private static final Path DEFAULT_ASSETS_PATH = Paths.get(System.getProperty("user.dir")
             + File.separator + "assets" + File.separator);
 
-    public static final String[] JSON_PRINT_MODE_FLAGS = new String[]{"--use-json-pretty-printing", "-j"}; // added for basics learning
+    public static final String[] JSON_PRINT_MODE_FLAGS = new String[] {"--use-json-pretty-printing", "-j"}; // added for basics learning
+    public static final String[] EXCLUDE_COMMIT_STATS_FLAGS = new String[] {"--exclude-commit-stats", "-e"};
 
     private static ArgumentParser getArgumentParser() {
         ArgumentParser parser = ArgumentParsers
@@ -132,6 +133,11 @@ public class ArgsParser {
                 .dest(JSON_PRINT_MODE_FLAGS[0])
                 .action(Arguments.storeTrue())
                 .help("A flag to use json pretty printing when generating the json files.");
+
+        parser.addArgument(EXCLUDE_COMMIT_STATS_FLAGS)
+                .dest(EXCLUDE_COMMIT_STATS_FLAGS[0])
+                .action(Arguments.storeTrue())
+                .help("A flag to include commits file stats in the commit summary.");
 
         parser.version("RepoSense " + RepoSense.getVersion());
         parser.addArgument(VERSION_FLAGS)
@@ -326,6 +332,7 @@ public class ArgsParser {
         boolean shouldRefreshOnlyText = results.get(REFRESH_ONLY_TEXT_FLAG[0]);
 
         boolean isJsonPrettyPrintingUsed = results.get(JSON_PRINT_MODE_FLAGS[0]); // json pretty printing
+        boolean shouldIncludeCommitFileStats = !(boolean) results.get(EXCLUDE_COMMIT_STATS_FLAGS[0]);
 
         CliArguments.Builder cliArgumentsBuilder = new CliArguments.Builder()
                 .configFolderPath(configFolderPath)
@@ -346,7 +353,8 @@ public class ArgsParser {
                 .isPortfolio(isPortfolio)
                 .isFreshClonePerformed(shouldPerformFreshCloning)
                 .isOnlyTextRefreshed(shouldRefreshOnlyText)
-                .isPrettyPrintingUsed(isJsonPrettyPrintingUsed); // json pretty printing
+                .isPrettyPrintingUsed(isJsonPrettyPrintingUsed) // json pretty printing
+                .shouldIncludeCommitFileStats(shouldIncludeCommitFileStats);
 
         LogsManager.setLogFolderLocation(outputFolderPath);
 
