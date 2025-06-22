@@ -28,14 +28,7 @@ public class CommitResult {
     public CommitResult(Author author, String hash, Boolean isMergeCommit, LocalDateTime time, String messageTitle,
                         String messageBody, String[] tags, Map<FileType, ContributionPair> fileTypesAndContributionMap,
                         FileChangeStats fileChangeStats) {
-        this.author = author;
-        this.hash = hash;
-        this.isMergeCommit = isMergeCommit;
-        this.time = time;
-        this.messageTitle = messageTitle;
-        this.messageBody = messageBody;
-        this.tags = tags;
-        this.fileTypesAndContributionMap = fileTypesAndContributionMap;
+        this(author, hash, isMergeCommit, time, messageTitle, messageBody, tags, fileTypesAndContributionMap);
         this.fileChangeStats = fileChangeStats;
     }
 
@@ -105,6 +98,10 @@ public class CommitResult {
 
     public Map<FileType, ContributionPair> getFileTypesAndContributionMap() {
         return fileTypesAndContributionMap;
+    }
+
+    public FileChangeStats getFileChangeStats() {
+        return fileChangeStats;
     }
 
     @Override
