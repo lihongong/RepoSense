@@ -132,7 +132,7 @@ public class ReportGenerator {
                 TimeUtil::getElapsedTime, cliArguments.getZoneId(), cliArguments.isFreshClonePerformed(),
                 cliArguments.isAuthorshipAnalyzed(), cliArguments.getOriginalityThreshold(),
                 repoBlurbMap, authorBlurbMap, chartBlurbMap, cliArguments.isPortfolio(),
-                cliArguments.isOnlyTextRefreshed()
+                cliArguments.isOnlyTextRefreshed(), cliArguments.shouldIncludeCommitFileStats()
         );
     }
 
@@ -170,7 +170,8 @@ public class ReportGenerator {
             int numAnalysisThreads, Supplier<String> reportGenerationTimeProvider, ZoneId zoneId,
             boolean shouldFreshClone, boolean shouldAnalyzeAuthorship, double originalityThreshold,
             RepoBlurbMap repoBlurbMap, AuthorBlurbMap authorBlurbMap, ChartBlurbMap chartBlurbMap,
-            boolean isPortfolio, boolean isOnlyTextRefreshed) throws IOException, InvalidMarkdownException {
+            boolean isPortfolio, boolean isOnlyTextRefreshed, boolean shouldIncludeCommitFileStats)
+            throws IOException, InvalidMarkdownException {
         prepareTemplateFile(outputPath);
         if (Files.exists(Paths.get(configAssetsPath))) {
             FileUtil.copyDirectoryContents(configAssetsPath, outputPath, assetsFilesWhiteList);
@@ -193,7 +194,8 @@ public class ReportGenerator {
         progressTracker = new ProgressTracker(configs.size());
 
         List<Path> reportFoldersAndFiles = cloneAndAnalyzeRepos(configs, outputPath, numCloningThreads,
-                numAnalysisThreads, shouldFreshClone, shouldAnalyzeAuthorship, originalityThreshold);
+                numAnalysisThreads, shouldFreshClone, shouldAnalyzeAuthorship, originalityThreshold,
+                shouldIncludeCommitFileStats);
 
         this.globalSinceDate = TimeUtil.isEqualToArbitraryFirstDateConverted(this.globalSinceDate, zoneId)
                 ? earliestSinceDate : this.globalSinceDate;
@@ -260,7 +262,7 @@ public class ReportGenerator {
      */
     private List<Path> cloneAndAnalyzeRepos(List<RepoConfiguration> configs, String outputPath, int numCloningThreads,
             int numAnalysisThreads, boolean shouldFreshClone, boolean shouldAnalyzeAuthorship,
-            double originalityThreshold) {
+            double originalityThreshold, boolean shouldIncludeCommitFileStats) {
         Map<RepoLocation, List<RepoConfiguration>> repoLocationMap = groupConfigsByRepoLocation(configs);
         List<RepoLocation> repoLocationList = new ArrayList<>(repoLocationMap.keySet());
 
@@ -284,7 +286,7 @@ public class ReportGenerator {
             // for analysis is no more than `numAnalysisThreads`.
             CompletableFuture<AnalyzeJobOutput> analyzeFuture = cloneFuture.thenApplyAsync(
                     cloneJobOutput -> analyzeRepos(outputPath, configsToAnalyze, cloneJobOutput,
-                            shouldAnalyzeAuthorship, originalityThreshold),
+                            shouldAnalyzeAuthorship, originalityThreshold, shouldIncludeCommitFileStats),
                     analyzeExecutor);
 
             analyzeJobFutures.add(analyzeFuture);
@@ -364,7 +366,8 @@ public class ReportGenerator {
      * successful, the list of {@code generatedFiles} by the analysis and a list of {@code analysisErrors} encountered.
      */
     private AnalyzeJobOutput analyzeRepos(String outputPath, List<RepoConfiguration> configsToAnalyze,
-            CloneJobOutput cloneJobOutput, boolean shouldAnalyzeAuthorship, double originalityThreshold) {
+            CloneJobOutput cloneJobOutput, boolean shouldAnalyzeAuthorship, double originalityThreshold,
+            boolean shouldIncludeCommitFileStats) {
         RepoLocation location = cloneJobOutput.getLocation();
         boolean cloneSuccessful = cloneJobOutput.isCloneSuccessful();
 
@@ -391,7 +394,7 @@ public class ReportGenerator {
 
                 FileUtil.createDirectory(repoReportDirectory);
                 generatedFiles.addAll(analyzeRepo(configToAnalyze, repoReportDirectory.toString(),
-                        shouldAnalyzeAuthorship, originalityThreshold));
+                        shouldAnalyzeAuthorship, originalityThreshold, shouldIncludeCommitFileStats));
             } catch (IOException ioe) {
                 String logMessage = String.format(MESSAGE_ERROR_CREATING_DIRECTORY,
                         configToAnalyze.getLocation(), configToAnalyze.getBranch());
@@ -431,7 +434,7 @@ public class ReportGenerator {
      * @throws NoAuthorsWithCommitsFoundException if there are no authors with commits found for the repo.
      */
     private List<Path> analyzeRepo(RepoConfiguration config, String repoReportDirectory,
-            boolean shouldAnalyzeAuthorship, double originalityThreshold) throws NoAuthorsWithCommitsFoundException {
+            boolean shouldAnalyzeAuthorship, double originalityThreshold, boolean shouldIncludeCommitFileStats) throws NoAuthorsWithCommitsFoundException {
         // preprocess the config and repo
         updateRepoConfig(config);
         updateAuthorList(config);
@@ -446,7 +449,7 @@ public class ReportGenerator {
                 shouldAnalyzeAuthorship, originalityThreshold);
 
         CommitsReporter commitsReporter = new CommitsReporter();
-        CommitContributionSummary commitSummary = commitsReporter.generateCommitSummary(config);
+        CommitContributionSummary commitSummary = commitsReporter.generateCommitSummary(config, shouldIncludeCommitFileStats);
         earliestSinceDate = commitSummary.getEarliestSinceDate();
 
         List<Path> generatedFiles = generateIndividualRepoReport(repoReportDirectory, commitSummary, authorshipSummary);

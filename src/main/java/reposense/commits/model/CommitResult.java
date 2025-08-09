@@ -1,8 +1,10 @@
 package reposense.commits.model;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import reposense.model.Author;
@@ -18,9 +20,17 @@ public class CommitResult {
     private final String messageBody;
     private final String[] tags;
     private final Map<FileType, ContributionPair> fileTypesAndContributionMap;
+    private FileChangeStats fileChangeStats;
 
     private final transient Author author;
     private final transient LocalDateTime time;
+
+    public CommitResult(Author author, String hash, Boolean isMergeCommit, LocalDateTime time, String messageTitle,
+                        String messageBody, String[] tags, Map<FileType, ContributionPair> fileTypesAndContributionMap,
+                        FileChangeStats fileChangeStats) {
+        this(author, hash, isMergeCommit, time, messageTitle, messageBody, tags, fileTypesAndContributionMap);
+        this.fileChangeStats = fileChangeStats;
+    }
 
     public CommitResult(Author author, String hash, Boolean isMergeCommit, LocalDateTime time, String messageTitle,
             String messageBody, String[] tags, Map<FileType, ContributionPair> fileTypesAndContributionMap) {
@@ -88,6 +98,10 @@ public class CommitResult {
 
     public Map<FileType, ContributionPair> getFileTypesAndContributionMap() {
         return fileTypesAndContributionMap;
+    }
+
+    public FileChangeStats getFileChangeStats() {
+        return fileChangeStats;
     }
 
     @Override
